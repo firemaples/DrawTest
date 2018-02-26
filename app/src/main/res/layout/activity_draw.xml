@@ -31,6 +31,16 @@
             android:src="@drawable/selector_object_recog" />
 
         <ImageView
+            android:id="@+id/eraserBtn"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_margin="1dip"
+            android:layout_weight="1"
+            android:background="@drawable/selector_tool_bg"
+            android:contentDescription="@string/description"
+            android:src="@drawable/selector_eraser" />
+
+        <ImageView
             android:id="@+id/imgObjBtn"
             android:layout_width="0dip"
             android:layout_height="wrap_content"
@@ -71,6 +81,26 @@
             android:background="@drawable/selector_tool_bg"
             android:contentDescription="@string/description"
             android:src="@drawable/selector_shape" />
+
+        <ImageView
+            android:id="@+id/undoBtn"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_margin="1dip"
+            android:layout_weight="1"
+            android:background="@drawable/selector_tool_bg"
+            android:contentDescription="@string/description"
+            android:src="@drawable/selector_undo" />
+
+        <ImageView
+            android:id="@+id/redoBtn"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_margin="1dip"
+            android:layout_weight="1"
+            android:background="@drawable/selector_tool_bg"
+            android:contentDescription="@string/description"
+            android:src="@drawable/selector_redo" />
         
         <ImageView
             android:id="@+id/saveFileBtn"

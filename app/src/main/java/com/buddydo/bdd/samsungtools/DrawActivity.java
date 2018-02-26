@@ -79,6 +79,7 @@ import com.samsung.android.sdk.pen.engine.SpenTextChangeListener;
 import com.samsung.android.sdk.pen.engine.SpenTouchListener;
 import com.samsung.android.sdk.pen.pen.SpenPenInfo;
 import com.samsung.android.sdk.pen.pen.SpenPenManager;
+import com.samsung.android.sdk.pen.settingui.SpenSettingEraserLayout;
 import com.samsung.android.sdk.pen.settingui.SpenSettingPenLayout;
 import com.samsung.android.sdk.pen.settingui.SpenSettingTextLayout;
 
@@ -113,6 +114,7 @@ public class DrawActivity extends Activity {
     private FrameLayout mSettingView;
     private SpenSettingPenLayout mPenSettingView;
     private SpenSettingTextLayout mTextSettingView;
+    private SpenSettingEraserLayout mEraserSettingView;
 
     private Dialog mShapeSelectionDialog;
     private ShapeAdapter mShapesAdapter;
@@ -128,6 +130,9 @@ public class DrawActivity extends Activity {
     private ImageView mShapeLineObjBtn;
     private ImageView mSaveFileBtn;
     private ImageView mLoadFileBtn;
+    private ImageView mEraserBtn;
+    private ImageView mUndoBtn;
+    private ImageView mRedoBtn;
 
     private int mPreMode = MODE_PEN;
     private int mMode = MODE_PEN;
@@ -169,6 +174,7 @@ public class DrawActivity extends Activity {
         }
 
         RelativeLayout spenViewLayout = (RelativeLayout) findViewById(R.id.spenViewLayout);
+        FrameLayout spenViewContainer = (FrameLayout) findViewById(R.id.spenViewContainer);
 
         // Create PenSettingView
         mPenSettingView = new SpenSettingPenLayout(getApplicationContext(), "", spenViewLayout);
@@ -185,6 +191,9 @@ public class DrawActivity extends Activity {
         mSettingView = (FrameLayout) findViewById(R.id.settingView);
         mSettingView.addView(mPenSettingView);
 
+        // Create EraserSettingView
+        mEraserSettingView = new SpenSettingEraserLayout(getApplicationContext(), "", spenViewLayout);
+
         // Create SpenSurfaceView
         mSpenSurfaceView = new SpenSurfaceView(mContext);
         if (mSpenSurfaceView == null) {
@@ -193,8 +202,10 @@ public class DrawActivity extends Activity {
         }
         mSpenSurfaceView.setToolTipEnabled(true);
         spenViewLayout.addView(mSpenSurfaceView);
+        spenViewContainer.addView(mEraserSettingView);
         mPenSettingView.setCanvasView(mSpenSurfaceView);
         mTextSettingView.setCanvasView(mSpenSurfaceView);
+        mEraserSettingView.setCanvasView(mSpenSurfaceView);
 
         // Get the dimension of the device screen.
         Display display = getWindowManager().getDefaultDisplay();
@@ -226,6 +237,8 @@ public class DrawActivity extends Activity {
         mSpenSurfaceView.setTextChangeListener(mTextChangeListener);
         mSpenSurfaceView.setControlListener(mControlListener);
         mSpenSurfaceView.setLongPressListener(onLongPressListenner);
+        mSpenPageDoc.setHistoryListener(mHistoryListener);
+        mEraserSettingView.setEraserListener(mEraserListener);
 
 
         // Set a button
@@ -252,6 +265,17 @@ public class DrawActivity extends Activity {
 
         mLoadFileBtn = (ImageView) findViewById(R.id.loadFileBtn);
         mLoadFileBtn.setOnClickListener(mLoadFileBtnClickListener);
+
+        mEraserBtn = (ImageView) findViewById(R.id.eraserBtn);
+        mEraserBtn.setOnClickListener(mEraserBtnClickListener);
+
+        mUndoBtn = (ImageView) findViewById(R.id.undoBtn);
+        mUndoBtn.setOnClickListener(undoNredoBtnClickListener);
+        mUndoBtn.setEnabled(mSpenPageDoc.isUndoable());
+
+        mRedoBtn = (ImageView) findViewById(R.id.redoBtn);
+        mRedoBtn.setOnClickListener(undoNredoBtnClickListener);
+        mRedoBtn.setEnabled(mSpenPageDoc.isRedoable());
 
         selectButton(mPenBtn);
         initShapeSelectionDialog();
@@ -1013,6 +1037,75 @@ public class DrawActivity extends Activity {
         return;
     }
 
+    private final OnClickListener mEraserBtnClickListener = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            // When Spen is in eraser mode
+            if (mSpenSurfaceView.getToolTypeAction(mToolType) == SpenSurfaceView.ACTION_ERASER) {
+                // If EraserSettingView is open, close it.
+                if (mEraserSettingView.isShown()) {
+                    mEraserSettingView.setVisibility(View.GONE);
+                    // If EraserSettingView is not open, open it.
+                } else {
+                    mEraserSettingView.setVisibility(View.VISIBLE);
+                }
+                // If Spen is not in eraser mode, change it to eraser mode.
+            } else {
+                selectButton(mEraserBtn);
+                mSpenSurfaceView.setToolTypeAction(mToolType, SpenSurfaceView.ACTION_ERASER);
+            }
+        }
+    };
+
+    private final OnClickListener undoNredoBtnClickListener = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (mSpenPageDoc == null) {
+                return;
+            }
+            // Undo button is clicked.
+            if (v.equals(mUndoBtn)) {
+                if (mSpenPageDoc.isUndoable()) {
+                    SpenPageDoc.HistoryUpdateInfo[] userData = mSpenPageDoc.undo();
+                    mSpenSurfaceView.updateUndo(userData);
+                }
+                // Redo button is clicked.
+            } else if (v.equals(mRedoBtn)) {
+                if (mSpenPageDoc.isRedoable()) {
+                    SpenPageDoc.HistoryUpdateInfo[] userData = mSpenPageDoc.redo();
+                    mSpenSurfaceView.updateRedo(userData);
+                }
+            }
+        }
+    };
+
+    private final SpenSettingEraserLayout.EventListener mEraserListener = new SpenSettingEraserLayout.EventListener() {
+        @Override
+        public void onClearAll() {
+            // ClearAll button action routines of EraserSettingView
+            mSpenPageDoc.removeAllObject();
+            mSpenSurfaceView.update();
+        }
+    };
+
+    private final SpenPageDoc.HistoryListener mHistoryListener = new SpenPageDoc.HistoryListener() {
+        @Override
+        public void onCommit(SpenPageDoc page) {
+        }
+
+        @Override
+        public void onUndoable(SpenPageDoc page, boolean undoable) {
+            // Enable or disable the button according to the availability of undo.
+            mUndoBtn.setEnabled(undoable);
+        }
+
+        @Override
+        public void onRedoable(SpenPageDoc page, boolean redoable) {
+            // Enable or disable the button according to the availability of redo.
+            mRedoBtn.setEnabled(redoable);
+        }
+    };
+
     private final OnClickListener mSaveFileBtnClickListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -1302,6 +1395,9 @@ public class DrawActivity extends Activity {
         mShapeObjRecogBtn.setEnabled(isEnable);
         mSaveFileBtn.setEnabled(isEnable);
         mLoadFileBtn.setEnabled(isEnable);
+        mEraserBtn.setEnabled(isEnable);
+        mUndoBtn.setEnabled(isEnable && mSpenPageDoc.isUndoable());
+        mRedoBtn.setEnabled(isEnable && mSpenPageDoc.isRedoable());
     }
 
     private void selectButton(View v) {
@@ -1312,6 +1408,7 @@ public class DrawActivity extends Activity {
         mTextObjBtn.setSelected(false);
         mStrokeObjBtn.setSelected(false);
         mShapeLineObjBtn.setSelected(false);
+        mEraserBtn.setSelected(false);
 
         v.setSelected(true);
 
@@ -1322,6 +1419,7 @@ public class DrawActivity extends Activity {
         // Close all the setting views.
         mPenSettingView.setVisibility(SpenSurfaceView.GONE);
         mTextSettingView.setVisibility(SpenSurfaceView.GONE);
+        mEraserSettingView.setVisibility(SpenSurfaceView.GONE);
     }
 
     @Override
@@ -1394,6 +1492,10 @@ public class DrawActivity extends Activity {
         }
         if (mTextSettingView != null) {
             mTextSettingView.close();
+        }
+
+        if (mEraserSettingView != null) {
+            mEraserSettingView.close();
         }
 
         if (mSpenSurfaceView != null) {
