@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -16,6 +17,7 @@ import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -174,8 +176,8 @@ public class DrawActivity extends Activity {
         HashMap<String, String> hashMapFont = new HashMap<String, String>();
         hashMapFont.put("Droid Sans Georgian", "/system/fonts/DroidSansGeorgian.ttf");
         hashMapFont.put("Droid Serif", "/system/fonts/DroidSerif-Regular.ttf");
-		hashMapFont.put("Droid Sans", "/system/fonts/DroidSans.ttf");
-		hashMapFont.put("Droid Sans Mono", "/system/fonts/DroidSansMono.ttf");
+        hashMapFont.put("Droid Sans", "/system/fonts/DroidSans.ttf");
+        hashMapFont.put("Droid Sans Mono", "/system/fonts/DroidSansMono.ttf");
         mTextSettingView = (SpenSettingTextLayout) findViewById(R.id.settingTextLayout);
         mTextSettingView.initialize("", hashMapFont, spenViewLayout);
 
@@ -309,9 +311,9 @@ public class DrawActivity extends Activity {
         mTextSettingView.setInfo(textInfo);
     }
 
-    private SpenLongPressListener onLongPressListenner = new SpenLongPressListener(){
+    private SpenLongPressListener onLongPressListenner = new SpenLongPressListener() {
         @Override
-        public void onLongPressed(MotionEvent event){
+        public void onLongPressed(MotionEvent event) {
             enableButton(true);
         }
     };
@@ -458,10 +460,10 @@ public class DrawActivity extends Activity {
             }
         }
 
-        if (lineSpacing != 0){
+        if (lineSpacing != 0) {
             height = lineSpacing + margin;
         } else {
-            float fontSize = mSpenPageDoc.getWidth()/20;
+            float fontSize = mSpenPageDoc.getWidth() / 20;
             ArrayList<SpenTextSpanBase> sInfo =
                     textBox.findTextSpan(textBox.getCursorPosition(), textBox.getCursorPosition());
             if (sInfo != null) {
@@ -594,13 +596,13 @@ public class DrawActivity extends Activity {
         @Override
         public boolean onMenuSelected(ArrayList<SpenObjectBase> objectList, int itemId) {
             switch (itemId) {
-            // Properties of object shape/line.
-            case CONTEXT_MENU_PROPERTIES_ID:
-                shapeProperties();
-                mSpenSurfaceView.closeControl();
-                break;
-            default:
-                break;
+                // Properties of object shape/line.
+                case CONTEXT_MENU_PROPERTIES_ID:
+                    shapeProperties();
+                    mSpenSurfaceView.closeControl();
+                    break;
+                default:
+                    break;
             }
 
             return true;
@@ -1012,20 +1014,21 @@ public class DrawActivity extends Activity {
     private final OnClickListener mSaveFileBtnClickListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
-            if(checkPermission()){
+            if (checkPermission()) {
                 return;
             }
             mSpenSurfaceView.closeControl();
 
             closeSettingView();
-            saveNoteFile(false);
+//            saveNoteFile(false);
+            returnNoteFilePNG();
         }
     };
 
     private final OnClickListener mLoadFileBtnClickListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
-            if(checkPermission()){
+            if (checkPermission()) {
                 return;
             }
             mSpenSurfaceView.closeControl();
@@ -1089,6 +1092,19 @@ public class DrawActivity extends Activity {
         dlgSave.show();
 
         return true;
+    }
+
+    private void returnNoteFilePNG() {
+        // Set the save directory for the file.
+        String saveFilePath = mFilePath.getPath() + '/';
+        String fileName = String.valueOf(System.currentTimeMillis()) + ".png";
+        saveFilePath += fileName;
+        captureSpenSurfaceView(saveFilePath);
+
+        Intent resultIntent = new Intent();
+        resultIntent.setData(Uri.fromFile(new File(saveFilePath)));
+        setResult(RESULT_OK, resultIntent);
+        finish();
     }
 
     private boolean saveNoteFile(String strFileName) {
@@ -1316,25 +1332,26 @@ public class DrawActivity extends Activity {
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            if(checkPermission()){
+                            if (checkPermission()) {
                                 return;
                             }
-                            saveNoteFile(true);
+//                            saveNoteFile(true);
+                            returnNoteFilePNG();
                             dialog.dismiss();
                         }
                     }).setNeutralButton("No", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                            mIsDiscard = true;
-                            finish();
-                        }
-                    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    }).show();
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                    mIsDiscard = true;
+                    finish();
+                }
+            }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            }).show();
             dlg = null;
         } else {
             super.onBackPressed();
@@ -1395,9 +1412,12 @@ public class DrawActivity extends Activity {
             }
             mSpenNoteDoc = null;
         }
-    };
+    }
+
+    ;
     public static final int SDK_VERSION = Build.VERSION.SDK_INT;
     private static final int PEMISSION_REQUEST_CODE = 1;
+
     @TargetApi(Build.VERSION_CODES.M)
     public boolean checkPermission() {
         if (SDK_VERSION < 23) {
@@ -1405,13 +1425,13 @@ public class DrawActivity extends Activity {
         }
         List<String> permissionList = new ArrayList<String>(Arrays.asList(Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.READ_EXTERNAL_STORAGE));
-        if(PackageManager.PERMISSION_GRANTED == checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+        if (PackageManager.PERMISSION_GRANTED == checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             permissionList.remove(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
-        if(PackageManager.PERMISSION_GRANTED == checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)){
+        if (PackageManager.PERMISSION_GRANTED == checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)) {
             permissionList.remove(Manifest.permission.READ_EXTERNAL_STORAGE);
         }
-        if(permissionList.size()>0) {
+        if (permissionList.size() > 0) {
             requestPermissions(permissionList.toArray(new String[permissionList.size()]), PEMISSION_REQUEST_CODE);
             return true;
         }
@@ -1422,10 +1442,10 @@ public class DrawActivity extends Activity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PEMISSION_REQUEST_CODE) {
-            if (grantResults != null ) {
-                for(int i= 0; i< grantResults.length;i++){
-                    if(grantResults[i]!= PackageManager.PERMISSION_GRANTED){
-                        Toast.makeText(mContext,"permission: " + permissions[i] + " is denied", Toast.LENGTH_SHORT).show();
+            if (grantResults != null) {
+                for (int i = 0; i < grantResults.length; i++) {
+                    if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                        Toast.makeText(mContext, "permission: " + permissions[i] + " is denied", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
