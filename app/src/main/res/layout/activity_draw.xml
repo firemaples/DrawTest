@@ -36,6 +36,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="1dip"
             android:layout_weight="1"
+            android:visibility="gone"
             android:background="@drawable/selector_tool_bg"
             android:contentDescription="@string/description"
             android:src="@drawable/selector_image" />
@@ -56,6 +57,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="1dip"
             android:layout_weight="1"
+            android:visibility="gone"
             android:background="@drawable/selector_tool_bg"
             android:contentDescription="@string/description"
             android:src="@drawable/selector_gesture" />
@@ -86,6 +88,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="1dip"
             android:layout_weight="1"
+            android:visibility="gone"
             android:background="@drawable/selector_tool_bg"
             android:contentDescription="@string/description"
             android:src="@drawable/selector_open" />

@@ -46,6 +46,7 @@ import android.widget.Toast;
 
 import com.buddydo.bdd.samsungtools.tools.SDKUtils;
 import com.buddydo.bdd.samsungtools.tools.ShapeAdapter;
+import com.buddydo.bdd.samsungtools.utils.Utils;
 import com.samsung.android.sdk.SsdkUnsupportedException;
 import com.samsung.android.sdk.pen.Spen;
 import com.samsung.android.sdk.pen.SpenSettingPenInfo;
@@ -294,6 +295,7 @@ public class DrawActivity extends Activity {
 
         // Initialize text settings
         SpenSettingTextInfo textInfo = new SpenSettingTextInfo();
+        textInfo.size = Utils.convertSpToPixels(12, this);
         int mCanvasWidth = mScreenRect.width();
 
         if (mSpenSurfaceView != null) {
