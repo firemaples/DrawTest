@@ -1455,30 +1455,27 @@ public class DrawActivity extends Activity {
             AlertDialog.Builder dlg = new AlertDialog.Builder(mContext);
             dlg.setIcon(mContext.getResources().getDrawable(android.R.drawable.ic_dialog_alert));
             dlg.setTitle(mContext.getResources().getString(R.string.app_name))
-                    .setMessage("Do you want to exit after save?")
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            if (checkPermission()) {
-                                return;
-                            }
-//                            saveNoteFile(true);
-                            returnNoteFilePNG();
-                            dialog.dismiss();
-                        }
-                    }).setNeutralButton("No", new DialogInterface.OnClickListener() {
+                    .setMessage("Do you want to give up the changes?");
+            dlg.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
                     mIsDiscard = true;
                     finish();
                 }
-            }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            });
+            dlg.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
+                    if (checkPermission()) {
+                        return;
+                    }
+//                    saveNoteFile(true);
+//                    returnNoteFilePNG();
                     dialog.dismiss();
                 }
-            }).show();
+            });
+            dlg.show();
             dlg = null;
         } else {
             super.onBackPressed();
