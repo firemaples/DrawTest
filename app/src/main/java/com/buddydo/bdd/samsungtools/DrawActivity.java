@@ -234,39 +234,6 @@ public class DrawActivity extends Activity {
         // Add a Page to NoteDoc and get an instance and set it to the member variable.
         mSpenPageDoc = mSpenNoteDoc.appendPage();
 
-        Uri bgImageUri = getIntent().getData();
-        if (getIntent() != null && bgImageUri != null) {
-//            mSpenPageDoc.setBackgroundColor(0xFFD6E6F5);
-            String path = bgImageUri.toString();
-            if (URLUtil.isHttpUrl(path) || URLUtil.isHttpsUrl(path)) {
-                Glide.with(this).downloadOnly().load(path).into(new SimpleTarget<File>() {
-                    private ProgressUtil progressUtil;
-
-                    @Override
-                    public void onLoadStarted(@Nullable Drawable placeholder) {
-                        super.onLoadStarted(placeholder);
-                        progressUtil = new ProgressUtil(DrawActivity.this);
-                        progressUtil.show();
-                    }
-
-                    @Override
-                    public void onResourceReady(@NonNull File resource, @Nullable Transition<? super File> transition) {
-                        progressUtil.dismiss();
-                        new DisplayBgTask(DrawActivity.this, resource).execute();
-                    }
-
-                    @Override
-                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
-                        super.onLoadFailed(errorDrawable);
-                        progressUtil.dismiss();
-                    }
-                });
-            } else {
-                path = RealPathUtil.getRealPath(DrawActivity.this, bgImageUri);
-                loadFile(path);
-            }
-        }
-
         mSpenPageDoc.clearHistory();
         // Set PageDoc to View
         mSpenSurfaceView.setPageDoc(mSpenPageDoc, true);
@@ -339,9 +306,46 @@ public class DrawActivity extends Activity {
             mToolType = SpenSurfaceView.TOOL_SPEN;
         }
         mSpenSurfaceView.setToolTypeAction(mToolType, SpenSurfaceView.ACTION_STROKE);
-        checkPermission();
+        if (!checkPermission()) {
+            loadBgImage();
+        }
 
 //        sPenDetachIntentBroadcastReceiver.register(this);
+    }
+
+    private void loadBgImage() {
+        Uri bgImageUri = getIntent().getData();
+        if (getIntent() != null && bgImageUri != null) {
+//            mSpenPageDoc.setBackgroundColor(0xFFD6E6F5);
+            String path = bgImageUri.toString();
+            if (URLUtil.isHttpUrl(path) || URLUtil.isHttpsUrl(path)) {
+                Glide.with(this).downloadOnly().load(path).into(new SimpleTarget<File>() {
+                    private ProgressUtil progressUtil;
+
+                    @Override
+                    public void onLoadStarted(@Nullable Drawable placeholder) {
+                        super.onLoadStarted(placeholder);
+                        progressUtil = new ProgressUtil(DrawActivity.this);
+                        progressUtil.show();
+                    }
+
+                    @Override
+                    public void onResourceReady(@NonNull File resource, @Nullable Transition<? super File> transition) {
+                        progressUtil.dismiss();
+                        new DisplayBgTask(DrawActivity.this, resource).execute();
+                    }
+
+                    @Override
+                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                        super.onLoadFailed(errorDrawable);
+                        progressUtil.dismiss();
+                    }
+                });
+            } else {
+                path = RealPathUtil.getRealPath(DrawActivity.this, bgImageUri);
+                loadFile(path);
+            }
+        }
     }
 
     private void initSettingInfo() {
@@ -1575,10 +1579,17 @@ public class DrawActivity extends Activity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PEMISSION_REQUEST_CODE) {
             if (grantResults != null) {
+                boolean success = true;
                 for (int i = 0; i < grantResults.length; i++) {
                     if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                         Toast.makeText(mContext, "permission: " + permissions[i] + " is denied", Toast.LENGTH_SHORT).show();
+                        success = false;
                     }
+                }
+                if (success) {
+                    loadBgImage();
+                } else {
+                    finish();
                 }
             }
         }
