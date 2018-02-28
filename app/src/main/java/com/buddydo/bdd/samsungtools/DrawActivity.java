@@ -340,6 +340,8 @@ public class DrawActivity extends Activity {
         }
         mSpenSurfaceView.setToolTypeAction(mToolType, SpenSurfaceView.ACTION_STROKE);
         checkPermission();
+
+//        sPenDetachIntentBroadcastReceiver.register(this);
     }
 
     private void initSettingInfo() {
@@ -1511,6 +1513,8 @@ public class DrawActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
 
+//        sPenDetachIntentBroadcastReceiver.unregister(this);
+
         if (mPenSettingView != null) {
             mPenSettingView.close();
         }
@@ -1585,6 +1589,13 @@ public class DrawActivity extends Activity {
         Log.w(TAG, Log.getStackTraceString(new Throwable("Finish stacktrace")));
         super.finish();
     }
+
+    private SPenDetachIntentBroadcastReceiver sPenDetachIntentBroadcastReceiver = new SPenDetachIntentBroadcastReceiver() {
+        @Override
+        void onReceive(Context context, Intent intent, boolean sPenInserted) {
+            mToolType = sPenInserted ? SpenSurfaceView.TOOL_FINGER : SpenSurfaceView.TOOL_SPEN;
+        }
+    };
 
     private class DisplayBgTask extends ProgressAsyncTask<Void, Void, String> {
         private final File resource;
