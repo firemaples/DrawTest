@@ -1,5 +1,6 @@
 package com.buddydo.bdd.samsungtooltest;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -70,9 +71,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void startDraw() {
         Intent intent = new Intent();
-//        intent.setComponent(new ComponentName("com.buddydo.bdd.samsungtools", "com.buddydo.bdd.samsungtools.DrawActivity"));
-        intent.setAction("com.buddydo.bdd.samsungtools.DRAW");
-//        intent.setPackage("com.buddydo.bdd.samsungtools");
+//        intent.setAction("com.buddydo.bdd.samsungtools.DRAW");
+        intent.setComponent(new ComponentName("com.buddydo.bdd.samsungtools", "com.buddydo.bdd.samsungtools.DrawActivity"));
+        intent.setPackage("com.buddydo.bdd.samsungtools");
+        intent.setData(Uri.parse("https://www.buddydo.us/t3/MTY0NTY2ae88_T.png"));
 
         if (checkInstalled(intent)) {
             startActivityForResult(intent, REQUEST_DRAW);

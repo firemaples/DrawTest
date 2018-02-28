@@ -17,11 +17,15 @@ import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -30,6 +34,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
+import android.webkit.URLUtil;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -46,12 +51,17 @@ import android.widget.Toast;
 
 import com.buddydo.bdd.samsungtools.tools.SDKUtils;
 import com.buddydo.bdd.samsungtools.tools.ShapeAdapter;
+import com.buddydo.bdd.samsungtools.utils.ProgressAsyncTask;
+import com.buddydo.bdd.samsungtools.utils.ProgressUtil;
+import com.buddydo.bdd.samsungtools.utils.RealPathUtil;
 import com.buddydo.bdd.samsungtools.utils.Utils;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.samsung.android.sdk.SsdkUnsupportedException;
 import com.samsung.android.sdk.pen.Spen;
 import com.samsung.android.sdk.pen.SpenSettingPenInfo;
 import com.samsung.android.sdk.pen.SpenSettingTextInfo;
-import com.samsung.android.sdk.pen.document.SpenInvalidPasswordException;
 import com.samsung.android.sdk.pen.document.SpenNoteDoc;
 import com.samsung.android.sdk.pen.document.SpenObjectBase;
 import com.samsung.android.sdk.pen.document.SpenObjectImage;
@@ -60,8 +70,6 @@ import com.samsung.android.sdk.pen.document.SpenObjectShape;
 import com.samsung.android.sdk.pen.document.SpenObjectStroke;
 import com.samsung.android.sdk.pen.document.SpenObjectTextBox;
 import com.samsung.android.sdk.pen.document.SpenPageDoc;
-import com.samsung.android.sdk.pen.document.SpenUnsupportedTypeException;
-import com.samsung.android.sdk.pen.document.SpenUnsupportedVersionException;
 import com.samsung.android.sdk.pen.document.shapeeffect.SpenFillColorEffect;
 import com.samsung.android.sdk.pen.document.shapeeffect.SpenLineColorEffect;
 import com.samsung.android.sdk.pen.document.shapeeffect.SpenLineStyleEffect;
@@ -94,6 +102,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class DrawActivity extends Activity {
+    private static final String TAG = DrawActivity.class.getSimpleName();
 
     private final int MODE_PEN = 0;
     private final int MODE_IMG_OBJ = 1;
@@ -224,7 +233,40 @@ public class DrawActivity extends Activity {
         }
         // Add a Page to NoteDoc and get an instance and set it to the member variable.
         mSpenPageDoc = mSpenNoteDoc.appendPage();
-        mSpenPageDoc.setBackgroundColor(0xFFD6E6F5);
+
+        Uri bgImageUri = getIntent().getData();
+        if (getIntent() != null && bgImageUri != null) {
+//            mSpenPageDoc.setBackgroundColor(0xFFD6E6F5);
+            String path = bgImageUri.toString();
+            if (URLUtil.isHttpUrl(path) || URLUtil.isHttpsUrl(path)) {
+                Glide.with(this).downloadOnly().load(path).into(new SimpleTarget<File>() {
+                    private ProgressUtil progressUtil;
+
+                    @Override
+                    public void onLoadStarted(@Nullable Drawable placeholder) {
+                        super.onLoadStarted(placeholder);
+                        progressUtil = new ProgressUtil(DrawActivity.this);
+                        progressUtil.show();
+                    }
+
+                    @Override
+                    public void onResourceReady(@NonNull File resource, @Nullable Transition<? super File> transition) {
+                        progressUtil.dismiss();
+                        new DisplayBgTask(DrawActivity.this, resource).execute();
+                    }
+
+                    @Override
+                    public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                        super.onLoadFailed(errorDrawable);
+                        progressUtil.dismiss();
+                    }
+                });
+            } else {
+                path = RealPathUtil.getRealPath(DrawActivity.this, bgImageUri);
+                loadFile(path);
+            }
+        }
+
         mSpenPageDoc.clearHistory();
         // Set PageDoc to View
         mSpenSurfaceView.setPageDoc(mSpenPageDoc, true);
@@ -1189,17 +1231,25 @@ public class DrawActivity extends Activity {
         return true;
     }
 
+    private String generateTempFilePath(String ext) {
+        String saveFilePath = mFilePath.getPath() + '/';
+        String fileName = String.valueOf(System.currentTimeMillis()) + "." + ext;
+        saveFilePath += fileName;
+        return saveFilePath;
+    }
+
     private void returnNoteFilePNG() {
         // Set the save directory for the file.
-        String saveFilePath = mFilePath.getPath() + '/';
-        String fileName = String.valueOf(System.currentTimeMillis()) + ".png";
-        saveFilePath += fileName;
-        captureSpenSurfaceView(saveFilePath);
+        String saveFilePath = generateTempFilePath("png");
 
-        Intent resultIntent = new Intent();
-        resultIntent.setData(Uri.fromFile(new File(saveFilePath)));
-        setResult(RESULT_OK, resultIntent);
-        finish();
+//        captureSpenSurfaceView(saveFilePath);
+//
+//        Intent resultIntent = new Intent();
+//        resultIntent.setData(Uri.fromFile(new File(saveFilePath)));
+//        setResult(RESULT_OK, resultIntent);
+//        finish();
+
+        new ReturnPNGTask(this, saveFilePath).execute();
     }
 
     private boolean saveNoteFile(String strFileName) {
@@ -1235,22 +1285,19 @@ public class DrawActivity extends Activity {
             // Save the note information.
             mSpenNoteDoc.save(out, false);
             out.close();
-            Toast.makeText(mContext, "Captured images were stored in the file" + strFileName, Toast.LENGTH_SHORT)
-                    .show();
+            Log.i(TAG, "Captured images were stored in the file" + strFileName);
         } catch (IOException e) {
+            Log.e(TAG, "Failed to save the file.", e);
             File tmpFile = new File(strFileName);
             if (tmpFile.exists()) {
                 tmpFile.delete();
             }
-            Toast.makeText(mContext, "Failed to save the file.", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
         } catch (Exception e) {
+            Log.e(TAG, "Failed to save the file.", e);
             File tmpFile = new File(strFileName);
             if (tmpFile.exists()) {
                 tmpFile.delete();
             }
-            Toast.makeText(mContext, "Failed to save the file.", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
         }
         imgBitmap.recycle();
     }
@@ -1269,35 +1316,15 @@ public class DrawActivity extends Activity {
                     public void onClick(DialogInterface dialog, int which) {
                         String strFilePath = mFilePath.getPath() + '/' + fileList[which];
 
-                        try {
-                            SpenObjectTextBox.setInitialCursorPos(SpenObjectTextBox.CURSOR_POS_END);
-                            // Create NoteDoc with the selected file.
-                            SpenNoteDoc tmpSpenNoteDoc = new SpenNoteDoc(mContext, strFilePath, mScreenRect.width(),
-                                    SpenNoteDoc.MODE_WRITABLE, true);
-                            mSpenNoteDoc.close();
-                            mSpenNoteDoc = tmpSpenNoteDoc;
-                            if (mSpenNoteDoc.getPageCount() == 0) {
-                                mSpenPageDoc = mSpenNoteDoc.appendPage();
-                            } else {
-                                mSpenPageDoc = mSpenNoteDoc.getPage(mSpenNoteDoc.getLastEditedPageIndex());
-                            }
-                            mSpenSurfaceView.setPageDoc(mSpenPageDoc, true);
-                            mSpenSurfaceView.update();
-                            Toast.makeText(mContext, "Successfully loaded noteFile.", Toast.LENGTH_SHORT).show();
-                        } catch (IOException e) {
-                            Toast.makeText(mContext, "Cannot open this file.", Toast.LENGTH_LONG).show();
-                        } catch (SpenUnsupportedTypeException e) {
-                            Toast.makeText(mContext, "This file is not supported.", Toast.LENGTH_LONG).show();
-                        } catch (SpenInvalidPasswordException e) {
-                            Toast.makeText(mContext, "This file is locked by a password.", Toast.LENGTH_LONG).show();
-                        } catch (SpenUnsupportedVersionException e) {
-                            Toast.makeText(mContext, "This file is the version that does not support.",
-                                    Toast.LENGTH_LONG).show();
-                        } catch (Exception e) {
-                            Toast.makeText(mContext, "Failed to load noteDoc.", Toast.LENGTH_LONG).show();
-                        }
+                        loadFile(strFilePath);
                     }
                 }).show();
+    }
+
+    private void loadFile(String filePath) {
+        Log.i(TAG, "Load file: " + filePath);
+        mSpenPageDoc.setBackgroundImage(filePath);
+        mSpenSurfaceView.update();
     }
 
     private String[] setFileList() {
@@ -1553,6 +1580,67 @@ public class DrawActivity extends Activity {
                     }
                 }
             }
+        }
+    }
+
+    @Override
+    public void finish() {
+        Log.w(TAG, Log.getStackTraceString(new Throwable("Finish stacktrace")));
+        super.finish();
+    }
+
+    private class DisplayBgTask extends ProgressAsyncTask<Void, Void, String> {
+        private final File resource;
+
+        public DisplayBgTask(Activity activity, File resource) {
+            super(activity);
+            this.resource = resource;
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            String tempFilePath = generateTempFilePath("png");
+            try {
+                Utils.copy(resource, new File(tempFilePath));
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+            return tempFilePath;
+        }
+
+        @Override
+        protected void onPostExecute(String filePath) {
+            super.onPostExecute(filePath);
+            if (filePath != null) {
+                loadFile(filePath);
+            }
+        }
+    }
+
+    private class ReturnPNGTask extends ProgressAsyncTask<Void, Void, Void> {
+        private final String savePath;
+
+        public ReturnPNGTask(Activity activity, String savePath) {
+            super(activity);
+            this.savePath = savePath;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            captureSpenSurfaceView(savePath);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            Intent resultIntent = new Intent();
+            resultIntent.setData(Uri.fromFile(new File(savePath)));
+            setResult(RESULT_OK, resultIntent);
+
+            finish();
         }
     }
 }
