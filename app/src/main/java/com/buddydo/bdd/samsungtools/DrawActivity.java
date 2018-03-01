@@ -1246,7 +1246,7 @@ public class DrawActivity extends Activity {
 
     private void returnNoteFilePNG() {
         // Set the save directory for the file.
-        String saveFilePath = generateTempFilePath("png");
+        String saveFilePath = generateTempFilePath("jpg");
 
 //        captureSpenSurfaceView(saveFilePath);
 //
@@ -1287,7 +1287,7 @@ public class DrawActivity extends Activity {
         try {
             // Create FileOutputStream and save the captured image.
             out = new FileOutputStream(strFileName);
-            imgBitmap.compress(CompressFormat.PNG, 100, out);
+            imgBitmap.compress(CompressFormat.JPEG, 100, out);
             // Save the note information.
             mSpenNoteDoc.save(out, false);
             out.close();
@@ -1618,7 +1618,7 @@ public class DrawActivity extends Activity {
 
         @Override
         protected String doInBackground(Void... voids) {
-            String tempFilePath = generateTempFilePath("png");
+            String tempFilePath = generateTempFilePath("jpg");
             try {
                 Utils.copy(resource, new File(tempFilePath));
             } catch (IOException e) {
