@@ -1,6 +1,7 @@
 package com.buddydo.bdd.samsungtools.utils;
 
 import android.content.Context;
+import android.graphics.BitmapFactory;
 import android.util.TypedValue;
 
 import java.io.File;
@@ -36,5 +37,19 @@ public class Utils {
                 }
             }
         }
+    }
+
+    public static int[] getImageFileSize(String imagePath) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+
+//Returns null, sizes are in the options variable
+        BitmapFactory.decodeFile(imagePath, options);
+        int width = options.outWidth;
+        int height = options.outHeight;
+//If you want, the MIME type will also be decoded (if possible)
+//        String type = options.outMimeType;
+
+        return new int[]{width, height};
     }
 }

@@ -209,6 +209,7 @@ public class DrawActivity extends Activity {
             Toast.makeText(mContext, "Cannot create new SpenSurfaceView.", Toast.LENGTH_SHORT).show();
             finish();
         }
+        mSpenSurfaceView.setZoomable(false);
         mSpenSurfaceView.setToolTipEnabled(true);
         spenViewLayout.addView(mSpenSurfaceView);
         spenViewContainer.addView(mEraserSettingView);
@@ -1281,7 +1282,7 @@ public class DrawActivity extends Activity {
     private void captureSpenSurfaceView(String strFileName) {
 
         // Capture the view
-        Bitmap imgBitmap = mSpenSurfaceView.captureCurrentView(true);
+        Bitmap imgBitmap = mSpenSurfaceView.captureCurrentView(false);
         if (imgBitmap == null) {
             Toast.makeText(mContext, "Capture failed." + strFileName, Toast.LENGTH_SHORT).show();
             return;
@@ -1333,8 +1334,24 @@ public class DrawActivity extends Activity {
 
     private void loadFile(String filePath) {
         Log.i(TAG, "Load file: " + filePath);
+
+        int[] size = Utils.getImageFileSize(filePath);
+
+        mSpenNoteDoc.removePage(0);
+        mSpenPageDoc = mSpenNoteDoc.appendPage(size[0], size[1]);
+        mSpenPageDoc.setBackgroundImageMode(SpenPageDoc.BACKGROUND_IMAGE_MODE_FIT);
         mSpenPageDoc.setBackgroundImage(filePath);
+
+        mSpenSurfaceView.setPageDoc(mSpenPageDoc, true);
+
+//        mSpenSurfaceView.setZoom(mSpenSurfaceView.getWidth() / 2, mSpenSurfaceView.getHeight() / 2, );
+
         mSpenSurfaceView.update();
+
+        mSpenSurfaceView.setZoomable(true);
+        float ratio = Math.min((float) mSpenNoteDoc.getWidth() / (float) mSpenPageDoc.getWidth(), (float) mSpenNoteDoc.getHeight() / (float) mSpenPageDoc.getHeight());
+        mSpenSurfaceView.setZoom(mSpenSurfaceView.getWidth() / 2, mSpenSurfaceView.getHeight() / 2, ratio);
+        mSpenSurfaceView.setZoomable(false);
     }
 
     private String[] setFileList() {
