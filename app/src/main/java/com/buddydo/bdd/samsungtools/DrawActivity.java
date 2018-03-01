@@ -220,9 +220,10 @@ public class DrawActivity extends Activity {
         Display display = getWindowManager().getDefaultDisplay();
         mScreenRect = new Rect();
         display.getRectSize(mScreenRect);
+        int height = mScreenRect.height() - Utils.convertDpToPixels(40, this);
         // Create SpenNoteDoc
         try {
-            mSpenNoteDoc = new SpenNoteDoc(mContext, mScreenRect.width(), mScreenRect.height());
+            mSpenNoteDoc = new SpenNoteDoc(mContext, mScreenRect.width(), height);
         } catch (IOException e) {
             Toast.makeText(mContext, "Cannot create new NoteDoc.", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
@@ -233,6 +234,9 @@ public class DrawActivity extends Activity {
         }
         // Add a Page to NoteDoc and get an instance and set it to the member variable.
         mSpenPageDoc = mSpenNoteDoc.appendPage();
+
+        //fix position
+        mSpenPageDoc.setBackgroundImageMode(SpenPageDoc.BACKGROUND_IMAGE_MODE_FIT);
 
         mSpenPageDoc.clearHistory();
         // Set PageDoc to View
