@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.bt_startDraw).setOnClickListener(onClickListener);
         findViewById(R.id.bt_uninstallTools).setOnClickListener(onClickListener);
 
-        iv_resultImage = findViewById(R.id.iv_resultImage);
+        iv_resultImage = (ImageView) findViewById(R.id.iv_resultImage);
     }
 
     private View.OnClickListener onClickListener = new View.OnClickListener() {
