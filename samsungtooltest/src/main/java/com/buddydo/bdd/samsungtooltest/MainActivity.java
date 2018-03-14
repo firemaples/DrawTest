@@ -1,28 +1,20 @@
 package com.buddydo.bdd.samsungtooltest;
 
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.ShareCompat;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
-import java.io.File;
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MainActivity extends AppCompatActivity {
-    private final static String TAG = MainActivity.class.getSimpleName();
-
-    private final int REQUEST_DRAW = 1;
+    private final static Logger logger = LoggerFactory.getLogger(MainActivity.class);
 
     private ImageView iv_resultImage;
 
@@ -57,52 +49,35 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            if (requestCode == REQUEST_DRAW && data != null) {
-                Uri fileUri = data.getData();
-                if (fileUri != null) {
-                    Log.i(TAG, "Draw result got: " + fileUri.getPath());
-                    Glide.with(this)
-                            .load(fileUri)
-                            .into(iv_resultImage);
-                }
+
+            Uri uri = SamsungTools.handleDrawResult(requestCode, resultCode, data);
+            if (uri != null) {
+                logger.info("Draw result got: " + uri.getPath());
+                Glide.with(this)
+                        .load(uri)
+                        .into(iv_resultImage);
             }
         }
     }
 
     private void startDraw() {
-        Intent intent = new Intent();
-//        intent.setAction("com.buddydo.bdd.samsungtools.DRAW");
-        intent.setComponent(new ComponentName("com.buddydo.bdd.samsungtools", "com.buddydo.bdd.samsungtools.DrawActivity"));
-        intent.setPackage("com.buddydo.bdd.samsungtools");
-        intent.setData(Uri.parse("https://www.buddydo.us/t3/MTY0NTY2ae88_T.png"));
+//        Intent intent = new Intent();
+////        intent.setAction("com.buddydo.bdd.samsungtools.DRAW");
+//        intent.setComponent(new ComponentName("com.buddydo.bdd.samsungtools", "com.buddydo.bdd.samsungtools.DrawActivity"));
+//        intent.setPackage("com.buddydo.bdd.samsungtools");
+//        intent.setData(Uri.parse("https://www.buddydo.us/t3/MTY0NTY2ae88_T.png"));
 
-        if (checkInstalled(intent)) {
-            startActivityForResult(intent, REQUEST_DRAW);
+        Uri uri = Uri.parse("https://www.buddydo.us/t3/MTY0NTY2ae88_T.png");
+
+        if (SamsungTools.isDrawToolInstalled(this)) {
+            SamsungTools.startDraw(this, uri);
         } else {
             Toast.makeText(this, "SamsungTools not installed or version is too old", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private Intent prepareTempFileUri() {
-        File file = new File(getFilesDir(), "images/" + System.currentTimeMillis() + ".png");
-        Uri uriToImage = FileProvider.getUriForFile(this, "com.buddydo.bdd.samsungtooltest.fileprovider", file);
-        Intent intent = ShareCompat.IntentBuilder.from(this)
-                .setStream(uriToImage)
-                .getIntent();
-        intent.setData(uriToImage);
-        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-        return intent;
-    }
-
-    private boolean checkInstalled(Intent intent) {
-        PackageManager packageManager = getPackageManager();
-        List<ResolveInfo> activities = packageManager.queryIntentActivities(intent,
-                PackageManager.MATCH_DEFAULT_ONLY);
-        return activities.size() > 0;
-    }
-
     private void uninstall() {
-        Uri packageUri = Uri.parse("package:com.buddydo.bdd.samsungtools");
+        Uri packageUri = Uri.parse("package:com.buddydo.pen");
         Intent uninstallIntent =
                 new Intent(Intent.ACTION_UNINSTALL_PACKAGE, packageUri);
         startActivity(uninstallIntent);

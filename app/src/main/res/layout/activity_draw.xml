@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".DrawActivity" >
+    tools:context="com.buddydo.pen.DrawActivity" >
 
     <LinearLayout
         android:id="@+id/tool_menu"
@@ -125,7 +125,7 @@
 
     </LinearLayout>
 
-     <com.buddydo.bdd.samsungtools.utils.BaseFrameLayout
+     <com.buddydo.pen.utils.BaseFrameLayout
         android:id="@+id/spenViewContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
@@ -156,6 +156,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         
-    </com.buddydo.bdd.samsungtools.utils.BaseFrameLayout>
+    </com.buddydo.pen.utils.BaseFrameLayout>
 
 </LinearLayout>

@@ -39,4 +39,12 @@ dependencies {
         exclude group: 'com.android.support'
     }
 //    annotationProcessor 'com.github.bumptech.glide:compiler:4.6.1'
+
+    //For logger
+    compile 'com.github.tony19:logback-android-core:1.1.1-4'
+    compile ('com.github.tony19:logback-android-classic:1.1.1-4'){
+        exclude(group: 'xpp3', module: 'xpp3')
+        exclude group: 'com.google.android'
+    }
+    compile 'org.slf4j:slf4j-api:1.7.6'
 }
