@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setViews() {
+        findViewById(R.id.bt_checkSupport).setOnClickListener(onClickListener);
         findViewById(R.id.bt_startDraw).setOnClickListener(onClickListener);
         findViewById(R.id.bt_uninstallTools).setOnClickListener(onClickListener);
 
@@ -41,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
                 startDraw();
             } else if (id == R.id.bt_uninstallTools) {
                 uninstall();
+            } else if (id == R.id.bt_checkSupport) {
+                checkSupport();
             }
         }
     };
@@ -69,11 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
         Uri uri = Uri.parse("https://www.buddydo.us/t3/MTY0NTY2ae88_T.png");
 
-        if (SamsungTools.isDrawToolInstalled(this)) {
-            SamsungTools.startDraw(this, uri);
-        } else {
-            Toast.makeText(this, "SamsungTools not installed or version is too old", Toast.LENGTH_SHORT).show();
-        }
+        SamsungTools.startDraw(this, uri);
     }
 
     private void uninstall() {
@@ -81,5 +80,13 @@ public class MainActivity extends AppCompatActivity {
         Intent uninstallIntent =
                 new Intent(Intent.ACTION_UNINSTALL_PACKAGE, packageUri);
         startActivity(uninstallIntent);
+    }
+
+    private void checkSupport() {
+        if (SamsungTools.isDeviceSupported(this)) {
+            Toast.makeText(this, "Support", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Not support", Toast.LENGTH_SHORT).show();
+        }
     }
 }
