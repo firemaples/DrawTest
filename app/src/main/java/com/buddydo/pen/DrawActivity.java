@@ -165,6 +165,7 @@ public class DrawActivity extends Activity {
 
     private Dialog mShapePropertiesDialog;
 
+    private boolean toolMenuIsShowing = false;
     private ToolMenuAnimRunner toolMenuAnimRunner;
     private Animation animToolMenuIn, animToolMenuOut;
 
@@ -289,7 +290,7 @@ public class DrawActivity extends Activity {
         mStrokeObjBtn = (ImageView) findViewById(R.id.strokeObjBtn);
         mStrokeObjBtn.setOnClickListener(mStrokeObjBtnClickListener);
 
-        mShapeLineObjBtn = (ImageView) findViewById(R.id.choiceBtn);
+        mShapeLineObjBtn = (ImageView) findViewById(R.id.shapeLineBtn);
         mShapeLineObjBtn.setOnClickListener(mShapeLineObjBtnClickListener);
 
         mSaveFileBtn = (ImageView) findViewById(R.id.saveFileBtn);
@@ -413,6 +414,11 @@ public class DrawActivity extends Activity {
     }
 
     private void applyToolMenuAnim(boolean show, long delay) {
+        if (toolMenuIsShowing == show) {
+            return;
+        }
+        toolMenuIsShowing = show;
+
         if (toolMenuAnimRunner != null) {
             mToolMenu.removeCallbacks(toolMenuAnimRunner);
         }
@@ -451,6 +457,7 @@ public class DrawActivity extends Activity {
             switch (motionEvent.getAction()) {
                 case MotionEvent.ACTION_HOVER_ENTER:
                     Log.d(TAG, "onHover, action: ACTION_HOVER_ENTER");
+                    applyToolMenuAnim(true);
                     break;
                 case MotionEvent.ACTION_HOVER_EXIT:
                     Log.d(TAG, "onHover, action: ACTION_HOVER_EXIT");
@@ -847,7 +854,7 @@ public class DrawActivity extends Activity {
                     lineStyle.setWidth(4);
                     shape.setLineStyleEffect(lineStyle);
 
-                    mSpenPageDoc.appendObject(shape);
+//                    mSpenPageDoc.appendObject(shape);
                     mSpenSurfaceView.update();
                     mShapeSelectionDialog.dismiss();
                 } else {
@@ -867,7 +874,7 @@ public class DrawActivity extends Activity {
                     lineStyle.setWidth(4);
                     line.setLineStyleEffect(lineStyle);
 
-                    mSpenPageDoc.appendObject(line);
+//                    mSpenPageDoc.appendObject(line);
                     mSpenSurfaceView.update();
                     mShapeSelectionDialog.dismiss();
                 }

@@ -51,7 +51,7 @@
             android:visibility="gone"/>
 
         <ImageView
-            android:id="@+id/choiceBtn"
+            android:id="@+id/shapeLineBtn"
             style="@style/ToolBar.Button"
             android:background="@drawable/icon_spen_shape_wrapper"/>
 
