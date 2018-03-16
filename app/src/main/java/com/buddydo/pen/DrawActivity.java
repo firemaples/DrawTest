@@ -3,7 +3,6 @@ package com.buddydo.pen;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -25,6 +24,7 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -1581,7 +1581,7 @@ public class DrawActivity extends Activity {
     public void onBackPressed() {
         if (mSpenPageDoc.getObjectCount(true) > 0 && mSpenPageDoc.isChanged()) {
             AlertDialog.Builder dlg = new AlertDialog.Builder(mContext);
-            dlg.setIcon(mContext.getResources().getDrawable(android.R.drawable.ic_dialog_alert));
+//            dlg.setIcon(mContext.getResources().getDrawable(android.R.drawable.ic_dialog_alert));
             dlg.setTitle(mContext.getResources().getString(R.string.app_name))
                     .setMessage("Do you want to give up the changes?");
             dlg.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
