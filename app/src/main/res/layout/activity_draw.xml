@@ -43,11 +43,13 @@
             </com.samsung.android.sdk.pen.settingui.SpenSettingTextLayout>
         </RelativeLayout>
 
-        <FrameLayout
-            android:id="@+id/settingView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
     </com.buddydo.pen.utils.BaseFrameLayout>
+
+    <FrameLayout
+        android:id="@+id/settingView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tool_menu"
+        android:layout_margin="8dp"/>
 
 </RelativeLayout>

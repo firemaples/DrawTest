@@ -215,12 +215,12 @@ public class DrawActivity extends Activity {
         mSpenSurfaceView.setHoverListener(new SpenHoverListener() {
             @Override
             public boolean onHover(View view, MotionEvent motionEvent) {
-                Log.d(TAG, "onHover, action: "+motionEvent.getAction());
+                Log.d(TAG, "onHover, action: " + motionEvent.getAction());
                 return false;
             }
         });
         spenViewLayout.addView(mSpenSurfaceView);
-        spenViewContainer.addView(mEraserSettingView);
+        mSettingView.addView(mEraserSettingView);
         mPenSettingView.setCanvasView(mSpenSurfaceView);
         mTextSettingView.setCanvasView(mSpenSurfaceView);
         mEraserSettingView.setCanvasView(mSpenSurfaceView);
@@ -405,6 +405,15 @@ public class DrawActivity extends Activity {
         }
     };
 
+    private void hideAllSettingViews() {
+        if (mPenSettingView.isShown()) {
+            mPenSettingView.setVisibility(View.GONE);
+        }
+        if (mEraserSettingView.isShown()) {
+            mEraserSettingView.setVisibility(View.GONE);
+        }
+    }
+
     private final SpenTouchListener mPenTouchListener = new SpenTouchListener() {
 
         @Override
@@ -519,6 +528,8 @@ public class DrawActivity extends Activity {
                         mSpenSurfaceView.update();
                     }
                 }
+            } else if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                hideAllSettingViews();
             }
             return false;
         }
