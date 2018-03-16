@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -243,6 +244,9 @@ public class DrawActivity extends Activity {
         }
         // Add a Page to NoteDoc and get an instance and set it to the member variable.
         mSpenPageDoc = mSpenNoteDoc.appendPage();
+
+        // Set background color
+        mSpenPageDoc.setBackgroundColor(ContextCompat.getColor(this, R.color.default_background_color));
 
         //fix position
         mSpenPageDoc.setBackgroundImageMode(SpenPageDoc.BACKGROUND_IMAGE_MODE_FIT);

@@ -38,4 +38,6 @@
     <color name="drawing_color_gray_start">#adadad</color>
     <!-- Rich text-->
     <color name="rich_text_toolbar_image">#616161</color>
+
+    <color name="default_background_color">#eee</color>
 </resources>
