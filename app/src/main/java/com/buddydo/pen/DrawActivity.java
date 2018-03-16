@@ -390,7 +390,7 @@ public class DrawActivity extends Activity {
 
         // Initialize text settings
         SpenSettingTextInfo textInfo = new SpenSettingTextInfo();
-        textInfo.size = Utils.convertSpToPixels(12, this);
+        textInfo.size = Utils.convertSpToPixels(16, this);
         int mCanvasWidth = mScreenRect.width();
 
         if (mSpenSurfaceView != null) {
