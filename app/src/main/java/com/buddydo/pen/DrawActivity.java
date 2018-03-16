@@ -34,6 +34,8 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.webkit.URLUtil;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -132,6 +134,7 @@ public class DrawActivity extends Activity {
     private SpenLineStyleEffect mLineStyleEffect;
     private SpenLineColorEffect mLineColorEffect;
 
+    private View mToolMenu;
     private ImageView mPenBtn;
     private ImageView mShapeObjRecogBtn;
     private ImageView mImgObjBtn;
@@ -160,6 +163,9 @@ public class DrawActivity extends Activity {
     private int mArrowEndSize;
 
     private Dialog mShapePropertiesDialog;
+
+    private ToolMenuAnimRunner toolMenuAnimRunner;
+    private Animation animToolMenuIn, animToolMenuOut;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -212,13 +218,7 @@ public class DrawActivity extends Activity {
         }
         mSpenSurfaceView.setZoomable(false);
         mSpenSurfaceView.setToolTipEnabled(true);
-        mSpenSurfaceView.setHoverListener(new SpenHoverListener() {
-            @Override
-            public boolean onHover(View view, MotionEvent motionEvent) {
-                Log.d(TAG, "onHover, action: " + motionEvent.getAction());
-                return false;
-            }
-        });
+        mSpenSurfaceView.setHoverListener(spenHoverListener);
         spenViewLayout.addView(mSpenSurfaceView);
         mSettingView.addView(mEraserSettingView);
         mPenSettingView.setCanvasView(mSpenSurfaceView);
@@ -262,6 +262,12 @@ public class DrawActivity extends Activity {
         mSpenPageDoc.setHistoryListener(mHistoryListener);
         mEraserSettingView.setEraserListener(mEraserListener);
 
+        //Set tool menu
+        mToolMenu = findViewById(R.id.tool_menu);
+        mToolMenu.setVisibility(View.GONE);
+        animToolMenuIn = AnimationUtils.loadAnimation(DrawActivity.this, R.anim.anim_tool_in);
+        animToolMenuOut = AnimationUtils.loadAnimation(DrawActivity.this, R.anim.anim_tool_out);
+        applyToolMenuAnim(true);
 
         // Set a button
         mPenBtn = (ImageView) findViewById(R.id.penBtn);
@@ -398,6 +404,61 @@ public class DrawActivity extends Activity {
         mTextSettingView.setInfo(textInfo);
     }
 
+    private void applyToolMenuAnim(boolean show) {
+        applyToolMenuAnim(show, 0);
+    }
+
+    private void applyToolMenuAnim(boolean show, long delay) {
+        if (toolMenuAnimRunner != null) {
+            mToolMenu.removeCallbacks(toolMenuAnimRunner);
+        }
+
+        toolMenuAnimRunner = new ToolMenuAnimRunner(show);
+        mToolMenu.postDelayed(toolMenuAnimRunner, delay);
+    }
+
+    private class ToolMenuAnimRunner implements Runnable {
+        private final boolean show;
+
+        ToolMenuAnimRunner(boolean show) {
+            this.show = show;
+        }
+
+        @Override
+        public void run() {
+            if (isFinishing() || isDestroyed()) {
+                return;
+            }
+
+            Animation animation;
+            if (show) {
+                animation = animToolMenuIn;
+            } else {
+                animation = animToolMenuOut;
+            }
+            mToolMenu.startAnimation(animation);
+            mToolMenu.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private SpenHoverListener spenHoverListener = new SpenHoverListener() {
+        @Override
+        public boolean onHover(View view, MotionEvent motionEvent) {
+            switch (motionEvent.getAction()) {
+                case MotionEvent.ACTION_HOVER_ENTER:
+                    Log.d(TAG, "onHover, action: ACTION_HOVER_ENTER");
+                    break;
+                case MotionEvent.ACTION_HOVER_EXIT:
+                    Log.d(TAG, "onHover, action: ACTION_HOVER_EXIT");
+                    break;
+                case MotionEvent.ACTION_HOVER_MOVE:
+                    Log.d(TAG, "onHover, action: ACTION_HOVER_MOVE");
+                    break;
+            }
+            return false;
+        }
+    };
+
     private SpenLongPressListener onLongPressListenner = new SpenLongPressListener() {
         @Override
         public void onLongPressed(MotionEvent event) {
@@ -405,131 +466,141 @@ public class DrawActivity extends Activity {
         }
     };
 
-    private void hideAllSettingViews() {
+    private void onDrawingStart() {
         if (mPenSettingView.isShown()) {
             mPenSettingView.setVisibility(View.GONE);
         }
         if (mEraserSettingView.isShown()) {
             mEraserSettingView.setVisibility(View.GONE);
         }
+
+        applyToolMenuAnim(false);
+    }
+
+    private void onDrawingEnd() {
+        applyToolMenuAnim(true, 600);
     }
 
     private final SpenTouchListener mPenTouchListener = new SpenTouchListener() {
 
         @Override
         public boolean onTouch(View view, MotionEvent event) {
-            if (event.getAction() == MotionEvent.ACTION_UP && event.getToolType(0) == mToolType) {
-                // Check if the control is created.
-                SpenControlBase control = mSpenSurfaceView.getControl();
-                if (control == null) {
-                    // When Pen touches the display while it is in Add ObjectImage mode
-                    if (mMode == MODE_IMG_OBJ) {
-                        // Set a bitmap file to ObjectImage.
-                        SpenObjectImage imgObj = new SpenObjectImage();
-                        Bitmap imageBitmap = BitmapFactory.decodeResource(mContext.getResources(),
-                                R.drawable.ic_launcher);
-                        imgObj.setImage(imageBitmap);
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                onDrawingEnd();
 
-                        // Set the location to insert ObjectImage and add it to PageDoc.
-                        PointF canvasPos = getCanvasPoint(event);
-                        RectF rect = new RectF(canvasPos.x - (imageBitmap.getWidth() / 2), canvasPos.y
-                                - (imageBitmap.getHeight() / 2), canvasPos.x + (imageBitmap.getWidth() / 2),
-                                canvasPos.y + (imageBitmap.getHeight() / 2));
-                        imgObj.setRect(rect, true);
-                        mSpenPageDoc.appendObject(imgObj);
-                        mSpenSurfaceView.update();
+                if (event.getToolType(0) == mToolType) {
+                    // Check if the control is created.
+                    SpenControlBase control = mSpenSurfaceView.getControl();
+                    if (control == null) {
+                        // When Pen touches the display while it is in Add ObjectImage mode
+                        if (mMode == MODE_IMG_OBJ) {
+                            // Set a bitmap file to ObjectImage.
+                            SpenObjectImage imgObj = new SpenObjectImage();
+                            Bitmap imageBitmap = BitmapFactory.decodeResource(mContext.getResources(),
+                                    R.drawable.ic_launcher);
+                            imgObj.setImage(imageBitmap);
 
-                        imageBitmap.recycle();
-                        return true;
-                        // When Pen touches the display while it is in Add ObjectTextBox mode
-                    } else if (mSpenSurfaceView.getToolTypeAction(mToolType) == SpenSurfaceView.ACTION_TEXT) {
-                        // Set the location to insert ObjectTextBox and add it to PageDoc.
-                        SpenObjectTextBox textObj = new SpenObjectTextBox();
-                        PointF canvasPos = getCanvasPoint(event);
-                        float x = canvasPos.x;
-                        float y = canvasPos.y;
-                        float textBoxHeight = getTextBoxDefaultHeight(textObj);
-                        if ((y + textBoxHeight) > mSpenPageDoc.getHeight()) {
-                            y = mSpenPageDoc.getHeight() - textBoxHeight;
-                        }
-                        RectF rect = new RectF(x, y, x + 350, y + textBoxHeight);
-                        textObj.setRect(rect, true);
-                        mSpenPageDoc.appendObject(textObj);
-                        mSpenPageDoc.selectObject(textObj);
-                        mSpenSurfaceView.update();
-                        // When Pen touches the display while it is in Add ObjectStroke mode
-                    } else if (mMode == MODE_STROKE_OBJ) {
-                        // Set the location to insert ObjectStroke and add it to PageDoc.
-                        PointF canvasPos = getCanvasPoint(event);
-                        float posX = canvasPos.x;
-                        int pointSize = 157;
-
-                        PointF[] points = new PointF[pointSize];
-                        float[] pressures = new float[pointSize];
-                        int[] timestamps = new int[pointSize];
-
-                        for (int i = 0; i < pointSize; i++) {
-                            points[i] = new PointF();
-                            points[i].x = posX++;
-                            points[i].y = (float) (canvasPos.y + Math.sin(.04 * i) * 50);
-                            pressures[i] = 1;
-                            timestamps[i] = (int) android.os.SystemClock.uptimeMillis();
-                        }
-
-                        SpenObjectStroke strokeObj = new SpenObjectStroke(mPenSettingView.getInfo().name, points,
-                                pressures, timestamps);
-                        strokeObj.setPenSize(mPenSettingView.getInfo().size);
-                        strokeObj.setColor(mPenSettingView.getInfo().color);
-                        mSpenPageDoc.appendObject(strokeObj);
-                        mSpenSurfaceView.update();
-                    } else if (mMode == MODE_SHAPE_OBJ) {
-
-                        SpenObjectShape shapeObj = null;
-                        try {
-                            shapeObj = new SpenObjectShape(mShapeObjNumber);
-                        } catch (Exception e) {
-                            Toast.makeText(mContext, "Not supported shape type: " + mShapeObjNumber, Toast.LENGTH_LONG)
-                                    .show();
-                            return false;
-                        }
-
-                        PointF canvasPos = getCanvasPoint(event);
-                        RectF rect = new RectF(canvasPos.x - 150, canvasPos.y - 150, canvasPos.x + 150,
-                                canvasPos.y + 150);
-                        shapeObj.setRect(rect, false);
-
-                        SpenLineStyleEffect lineStyle = new SpenLineStyleEffect();
-                        lineStyle.setWidth(4);
-                        shapeObj.setLineStyleEffect(lineStyle);
-
-                        mSpenPageDoc.appendObject(shapeObj);
-                        mSpenSurfaceView.update();
-
-                    } else if (mMode == MODE_LINE_OBJ) {
-                        SpenObjectLine line = null;
-
-                        try {
+                            // Set the location to insert ObjectImage and add it to PageDoc.
                             PointF canvasPos = getCanvasPoint(event);
-                            RectF rect = new RectF(canvasPos.x - 200, canvasPos.y - 200, canvasPos.x + 200,
-                                    canvasPos.y + 200);
-                            line = new SpenObjectLine(mShapeObjNumber, new PointF(rect.left, rect.top), new PointF(
-                                    rect.right, rect.bottom));
-                        } catch (Exception e) {
-                            Toast.makeText(mContext, "Not supported line type: " + mShapeObjNumber, Toast.LENGTH_LONG)
-                                    .show();
-                            return false;
+                            RectF rect = new RectF(canvasPos.x - (imageBitmap.getWidth() / 2), canvasPos.y
+                                    - (imageBitmap.getHeight() / 2), canvasPos.x + (imageBitmap.getWidth() / 2),
+                                    canvasPos.y + (imageBitmap.getHeight() / 2));
+                            imgObj.setRect(rect, true);
+                            mSpenPageDoc.appendObject(imgObj);
+                            mSpenSurfaceView.update();
+
+                            imageBitmap.recycle();
+                            return true;
+                            // When Pen touches the display while it is in Add ObjectTextBox mode
+                        } else if (mSpenSurfaceView.getToolTypeAction(mToolType) == SpenSurfaceView.ACTION_TEXT) {
+                            // Set the location to insert ObjectTextBox and add it to PageDoc.
+                            SpenObjectTextBox textObj = new SpenObjectTextBox();
+                            PointF canvasPos = getCanvasPoint(event);
+                            float x = canvasPos.x;
+                            float y = canvasPos.y;
+                            float textBoxHeight = getTextBoxDefaultHeight(textObj);
+                            if ((y + textBoxHeight) > mSpenPageDoc.getHeight()) {
+                                y = mSpenPageDoc.getHeight() - textBoxHeight;
+                            }
+                            RectF rect = new RectF(x, y, x + 350, y + textBoxHeight);
+                            textObj.setRect(rect, true);
+                            mSpenPageDoc.appendObject(textObj);
+                            mSpenPageDoc.selectObject(textObj);
+                            mSpenSurfaceView.update();
+                            // When Pen touches the display while it is in Add ObjectStroke mode
+                        } else if (mMode == MODE_STROKE_OBJ) {
+                            // Set the location to insert ObjectStroke and add it to PageDoc.
+                            PointF canvasPos = getCanvasPoint(event);
+                            float posX = canvasPos.x;
+                            int pointSize = 157;
+
+                            PointF[] points = new PointF[pointSize];
+                            float[] pressures = new float[pointSize];
+                            int[] timestamps = new int[pointSize];
+
+                            for (int i = 0; i < pointSize; i++) {
+                                points[i] = new PointF();
+                                points[i].x = posX++;
+                                points[i].y = (float) (canvasPos.y + Math.sin(.04 * i) * 50);
+                                pressures[i] = 1;
+                                timestamps[i] = (int) android.os.SystemClock.uptimeMillis();
+                            }
+
+                            SpenObjectStroke strokeObj = new SpenObjectStroke(mPenSettingView.getInfo().name, points,
+                                    pressures, timestamps);
+                            strokeObj.setPenSize(mPenSettingView.getInfo().size);
+                            strokeObj.setColor(mPenSettingView.getInfo().color);
+                            mSpenPageDoc.appendObject(strokeObj);
+                            mSpenSurfaceView.update();
+                        } else if (mMode == MODE_SHAPE_OBJ) {
+
+                            SpenObjectShape shapeObj = null;
+                            try {
+                                shapeObj = new SpenObjectShape(mShapeObjNumber);
+                            } catch (Exception e) {
+                                Toast.makeText(mContext, "Not supported shape type: " + mShapeObjNumber, Toast.LENGTH_LONG)
+                                        .show();
+                                return false;
+                            }
+
+                            PointF canvasPos = getCanvasPoint(event);
+                            RectF rect = new RectF(canvasPos.x - 150, canvasPos.y - 150, canvasPos.x + 150,
+                                    canvasPos.y + 150);
+                            shapeObj.setRect(rect, false);
+
+                            SpenLineStyleEffect lineStyle = new SpenLineStyleEffect();
+                            lineStyle.setWidth(4);
+                            shapeObj.setLineStyleEffect(lineStyle);
+
+                            mSpenPageDoc.appendObject(shapeObj);
+                            mSpenSurfaceView.update();
+
+                        } else if (mMode == MODE_LINE_OBJ) {
+                            SpenObjectLine line = null;
+
+                            try {
+                                PointF canvasPos = getCanvasPoint(event);
+                                RectF rect = new RectF(canvasPos.x - 200, canvasPos.y - 200, canvasPos.x + 200,
+                                        canvasPos.y + 200);
+                                line = new SpenObjectLine(mShapeObjNumber, new PointF(rect.left, rect.top), new PointF(
+                                        rect.right, rect.bottom));
+                            } catch (Exception e) {
+                                Toast.makeText(mContext, "Not supported line type: " + mShapeObjNumber, Toast.LENGTH_LONG)
+                                        .show();
+                                return false;
+                            }
+
+                            SpenLineStyleEffect lineStyle = new SpenLineStyleEffect();
+                            lineStyle.setWidth(4);
+                            line.setLineStyleEffect(lineStyle);
+
+                            mSpenPageDoc.appendObject(line);
+                            mSpenSurfaceView.update();
                         }
-
-                        SpenLineStyleEffect lineStyle = new SpenLineStyleEffect();
-                        lineStyle.setWidth(4);
-                        line.setLineStyleEffect(lineStyle);
-
-                        mSpenPageDoc.appendObject(line);
-                        mSpenSurfaceView.update();
                     }
                 }
             } else if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                hideAllSettingViews();
+                onDrawingStart();
             }
             return false;
         }
