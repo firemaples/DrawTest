@@ -1,161 +1,53 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context="com.buddydo.pen.DrawActivity" >
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#eee"
+                android:orientation="vertical"
+                tools:context="com.buddydo.pen.DrawActivity">
 
-    <LinearLayout
+    <include
         android:id="@+id/tool_menu"
-        android:layout_width="match_parent"
-        android:layout_height="40dp" >
+        layout="@layout/bar_tools"
+        android:layout_width="360dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="11dp"/>
 
-        <ImageView
-            android:id="@+id/penBtn"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_margin="1dip"
-            android:layout_weight="1"
-            android:background="@drawable/selector_tool_bg"
-            android:contentDescription="@string/description"
-            android:src="@drawable/selector_pen" />
-
-        <ImageView
-            android:id="@+id/recognitionBtn"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_margin="1dip"
-            android:layout_weight="1"
-            android:background="@drawable/selector_tool_bg"
-            android:contentDescription="@string/description"
-            android:src="@drawable/selector_object_recog" />
-
-        <ImageView
-            android:id="@+id/eraserBtn"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_margin="1dip"
-            android:layout_weight="1"
-            android:background="@drawable/selector_tool_bg"
-            android:contentDescription="@string/description"
-            android:src="@drawable/selector_eraser" />
-
-        <ImageView
-            android:id="@+id/imgObjBtn"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_margin="1dip"
-            android:layout_weight="1"
-            android:visibility="gone"
-            android:background="@drawable/selector_tool_bg"
-            android:contentDescription="@string/description"
-            android:src="@drawable/selector_image" />
-
-        <ImageView
-            android:id="@+id/textObjBtn"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_margin="1dip"
-            android:layout_weight="1"
-            android:background="@drawable/selector_tool_bg"
-            android:contentDescription="@string/description"
-            android:src="@drawable/selector_text" />
-
-        <ImageView
-            android:id="@+id/strokeObjBtn"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_margin="1dip"
-            android:layout_weight="1"
-            android:visibility="gone"
-            android:background="@drawable/selector_tool_bg"
-            android:contentDescription="@string/description"
-            android:src="@drawable/selector_gesture" />
-
-         <ImageView
-            android:id="@+id/choiceBtn"
-            android:layout_width="0dip"
-            android:layout_height="match_parent"
-            android:layout_margin="1dip"
-            android:layout_weight="1"
-            android:background="@drawable/selector_tool_bg"
-            android:contentDescription="@string/description"
-            android:src="@drawable/selector_shape" />
-
-        <ImageView
-            android:id="@+id/undoBtn"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_margin="1dip"
-            android:layout_weight="1"
-            android:background="@drawable/selector_tool_bg"
-            android:contentDescription="@string/description"
-            android:src="@drawable/selector_undo" />
-
-        <ImageView
-            android:id="@+id/redoBtn"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_margin="1dip"
-            android:layout_weight="1"
-            android:background="@drawable/selector_tool_bg"
-            android:contentDescription="@string/description"
-            android:src="@drawable/selector_redo" />
-        
-        <ImageView
-            android:id="@+id/saveFileBtn"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_margin="1dip"
-            android:layout_weight="1"
-            android:background="@drawable/selector_tool_bg"
-            android:contentDescription="@string/description"
-            android:src="@drawable/selector_save" />
-
-        <ImageView
-            android:id="@+id/loadFileBtn"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_margin="1dip"
-            android:layout_weight="1"
-            android:visibility="gone"
-            android:background="@drawable/selector_tool_bg"
-            android:contentDescription="@string/description"
-            android:src="@drawable/selector_open" />
-
-    </LinearLayout>
-
-     <com.buddydo.pen.utils.BaseFrameLayout
+    <com.buddydo.pen.utils.BaseFrameLayout
         android:id="@+id/spenViewContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="match_parent">
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent" >           
+            android:layout_height="match_parent">
 
             <RelativeLayout
                 android:id="@+id/spenViewLayout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_above="@+id/settingTextLayout" >
+                android:layout_above="@+id/settingTextLayout">
             </RelativeLayout>
+
             <com.samsung.android.sdk.pen.settingui.SpenSettingTextLayout
                 android:id="@+id/settingTextLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
                 android:layout_alignParentBottom="true"
-                android:visibility="gone"
-                android:background="@android:color/holo_purple">
+                android:background="@android:color/holo_purple"
+                android:orientation="vertical"
+                android:visibility="gone">
             </com.samsung.android.sdk.pen.settingui.SpenSettingTextLayout>
         </RelativeLayout>
-        
+
         <FrameLayout
             android:id="@+id/settingView"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-        
+            android:layout_height="wrap_content"/>
+
     </com.buddydo.pen.utils.BaseFrameLayout>
 
-</LinearLayout>
+</RelativeLayout>

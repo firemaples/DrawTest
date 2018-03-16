@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private void setViews() {
         findViewById(R.id.bt_checkSupport).setOnClickListener(onClickListener);
         findViewById(R.id.bt_startDraw).setOnClickListener(onClickListener);
+        findViewById(R.id.bt_startDrawWithImage).setOnClickListener(onClickListener);
         findViewById(R.id.bt_uninstallTools).setOnClickListener(onClickListener);
 
         iv_resultImage = (ImageView) findViewById(R.id.iv_resultImage);
@@ -39,7 +40,9 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             int id = v.getId();
             if (id == R.id.bt_startDraw) {
-                startDraw();
+                startDraw(null);
+            } else if (id == R.id.bt_startDrawWithImage) {
+                startDraw(Uri.parse("https://www.buddydo.us/t3/MTY0NTY2ae88_T.png"));
             } else if (id == R.id.bt_uninstallTools) {
                 uninstall();
             } else if (id == R.id.bt_checkSupport) {
@@ -63,14 +66,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void startDraw() {
+    private void startDraw(Uri uri) {
 //        Intent intent = new Intent();
 ////        intent.setAction("com.buddydo.bdd.samsungtools.DRAW");
 //        intent.setComponent(new ComponentName("com.buddydo.bdd.samsungtools", "com.buddydo.bdd.samsungtools.DrawActivity"));
 //        intent.setPackage("com.buddydo.bdd.samsungtools");
 //        intent.setData(Uri.parse("https://www.buddydo.us/t3/MTY0NTY2ae88_T.png"));
-
-        Uri uri = Uri.parse("https://www.buddydo.us/t3/MTY0NTY2ae88_T.png");
 
         SamsungTools.startDraw(this, uri);
     }

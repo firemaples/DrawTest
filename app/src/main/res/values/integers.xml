@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="toolbar_icon_alpha_selected" format="float" type="integer">0.8</item>
+    <item name="toolbar_icon_alpha_normal" format="float" type="integer">0.5</item>
+    <item name="toolbar_icon_alpha_disabled" format="float" type="integer">0.2</item>
+</resources>

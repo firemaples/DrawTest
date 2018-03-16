@@ -229,7 +229,7 @@ public class DrawActivity extends Activity {
         Display display = getWindowManager().getDefaultDisplay();
         mScreenRect = new Rect();
         display.getRectSize(mScreenRect);
-        int height = mScreenRect.height() - Utils.convertDpToPixels(40, this);
+        int height = mScreenRect.height();
         // Create SpenNoteDoc
         try {
             mSpenNoteDoc = new SpenNoteDoc(mContext, mScreenRect.width(), height);

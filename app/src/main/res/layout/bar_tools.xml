@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="360dp"
+    android:layout_height="wrap_content"
+    android:background="#F2FFFFFF"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="4dp"
+    app:cardPreventCornerOverlap="false"
+    app:contentPadding="0dp"
+    tools:showIn="@layout/activity_draw">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp">
+
+        <ImageView
+            android:id="@+id/penBtn"
+            style="@style/ToolBar.Button"
+            android:background="@drawable/icon_spen_pen_wrapper"/>
+
+        <ImageView
+            android:id="@+id/recognitionBtn"
+            style="@style/ToolBar.Button"
+            android:background="@drawable/icon_spen_smartpen_wrapper"/>
+
+        <ImageView
+            android:id="@+id/eraserBtn"
+            style="@style/ToolBar.Button"
+            android:background="@drawable/icon_spen_eraser_wrapper"/>
+
+        <ImageView
+            android:id="@+id/imgObjBtn"
+            style="@style/ToolBar.Button"
+            android:src="@drawable/selector_image"
+            android:visibility="gone"/>
+
+        <ImageView
+            android:id="@+id/textObjBtn"
+            style="@style/ToolBar.Button"
+            android:background="@drawable/icon_spen_text_wrapper"/>
+
+        <ImageView
+            android:id="@+id/strokeObjBtn"
+            style="@style/ToolBar.Button"
+            android:src="@drawable/selector_gesture"
+            android:visibility="gone"/>
+
+        <ImageView
+            android:id="@+id/choiceBtn"
+            style="@style/ToolBar.Button"
+            android:background="@drawable/icon_spen_shape_wrapper"/>
+
+        <ImageView
+            android:id="@+id/undoBtn"
+            style="@style/ToolBar.Button"
+            android:background="@drawable/icon_spen_back_wrapper"/>
+
+        <ImageView
+            android:id="@+id/redoBtn"
+            style="@style/ToolBar.Button"
+            android:background="@drawable/icon_spen_next_wrapper"/>
+
+        <ImageView
+            android:id="@+id/saveFileBtn"
+            style="@style/ToolBar.Button"
+            android:background="@drawable/icon_spen_save_wrapper"/>
+
+        <ImageView
+            android:id="@+id/loadFileBtn"
+            style="@style/ToolBar.Button"
+            android:src="@drawable/selector_open"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+</android.support.v7.widget.CardView>

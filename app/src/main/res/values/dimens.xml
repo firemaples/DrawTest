@@ -54,4 +54,6 @@
     <dimen name="toolbar_drawing_done_button_width">68dp</dimen>
     <dimen name="toolbar_drawing_height">114dp</dimen>
 
+    <dimen name="toolbar_icon_bg_padding">10dp</dimen>
+
 </resources>

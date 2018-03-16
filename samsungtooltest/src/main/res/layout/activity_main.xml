@@ -23,6 +23,12 @@
         android:text="Start drawing"/>
 
     <Button
+        android:id="@+id/bt_startDrawWithImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start drawing with image"/>
+
+    <Button
         android:id="@+id/bt_uninstallTools"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
