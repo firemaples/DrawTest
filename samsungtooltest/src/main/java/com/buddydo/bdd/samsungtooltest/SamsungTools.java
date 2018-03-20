@@ -111,14 +111,14 @@ public class SamsungTools {
 
     private static void showNotInstalledDialog(final Activity activity) {
         AlertDialog.Builder ab = new AlertDialog.Builder(activity);
-        ab.setMessage("You have not installed the SamsungTools app, do you want to install it?");
-        ab.setPositiveButton("Install", new DialogInterface.OnClickListener() {
+        ab.setMessage("您尚未安裝 [DoPen Tool], 是否要下載安裝?");
+        ab.setPositiveButton("下載", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 PackageUtils.showPlayStore(activity, toolsAppPackageName);
             }
         });
-        ab.setNegativeButton("Cancel", null);
+        ab.setNegativeButton("取消", null);
         ab.show();
     }
 
