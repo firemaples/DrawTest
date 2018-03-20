@@ -35,7 +35,9 @@ public class SamsungTools {
     private static final String SPEN_FEATURE = "com.sec.feature.spen_usp";
     @SuppressWarnings("ArraysAsListWithZeroOrOneArgument")
     private static final List<String> mSPenDevices = Arrays.asList(
-            "SM-N950F" //Galaxy Note 8
+            "SM-N950", //Galaxy Note 8
+            "SM-N920", //Galaxy Note 5
+            "SM-N910" //Galaxy Note 4
     );
 
     private static final String toolsAppPackageName = "com.buddydo.pen";
@@ -58,9 +60,11 @@ public class SamsungTools {
 //        }
 
         if (SAMSUNG.equalsIgnoreCase(Build.MANUFACTURER)) {
-            for (String model : mSPenDevices) {
-                if (model.equalsIgnoreCase(Build.MODEL)) {
-                    return true;
+            if (Build.MODEL != null) {
+                for (String model : mSPenDevices) {
+                    if (Build.MODEL.toUpperCase().contains(model.toUpperCase())) {
+                        return true;
+                    }
                 }
             }
         }
