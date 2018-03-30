@@ -1584,7 +1584,7 @@ public class DrawActivity extends Activity {
 //            dlg.setIcon(mContext.getResources().getDrawable(android.R.drawable.ic_dialog_alert));
             dlg.setTitle(mContext.getResources().getString(R.string.app_name))
                     .setMessage("Do you want to give up the changes?");
-            dlg.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            dlg.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
